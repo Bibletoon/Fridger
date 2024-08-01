@@ -1,8 +1,8 @@
 package main
 
 import (
+	"Fridger/internal/infrastructure/clients"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -11,7 +11,6 @@ import (
 	"image"
 	_ "image/jpeg"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 )
@@ -27,7 +26,9 @@ func main() {
 
 	b.RegisterHandlerMatchFunc(func(upd *models.Update) bool {
 		return len(upd.Message.Photo) > 0
-	}, handlePhoto)
+	}, func(ctx context.Context, b *bot.Bot, update *models.Update) {
+		go handlePhoto(ctx, b, update)
+	})
 
 	b.Start(ctx)
 }
@@ -64,7 +65,8 @@ func handlePhoto(ctx context.Context, b *bot.Bot, upd *models.Update) {
 		return
 	}
 
-	info, err := getProductInfo(ctx, result.GetText())
+	crpt := clients.NewCrptClient()
+	info, err := crpt.GetByDatamatrix(&ctx, result.GetText())
 	if err != nil {
 		fmt.Printf("%v\n", err.Error())
 		return
@@ -72,42 +74,11 @@ func handlePhoto(ctx context.Context, b *bot.Bot, upd *models.Update) {
 
 	msg := bot.SendMessageParams{
 		ChatID: upd.Message.Chat.ID,
-		Text:   info,
+		Text:   info.ProductName,
 	}
 	_, err = b.SendMessage(ctx, &msg)
 	if err != nil {
 		fmt.Printf("%v\n", err.Error())
 		return
 	}
-}
-
-type productInfo struct {
-	ProductName string `json:"productName"`
-}
-
-func getProductInfo(ctx context.Context, datamatrix string) (string, error) {
-	client := &http.Client{}
-	link := fmt.Sprintf("https://mobile.api.crpt.ru/mobile/check?code=%s&codeType=datamatrix", url.QueryEscape(datamatrix))
-	req, err := http.NewRequest("GET", link, nil)
-	if err != nil {
-		return "", err
-	}
-
-	req.Header.Add("User-Agent", "Platform: iOS 17.2; AppVersion: 4.47.0; AppVersionCode: 7630; Device: iPhone 14 Pro;")
-	req.Header.Add("Client", "iOS 17.2; AppVersion: 4.47.0; Device: iPhone 14 Pro;")
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	var info = productInfo{}
-	err = json.NewDecoder(resp.Body).Decode(&info)
-	if err != nil {
-		return "", err
-	}
-
-	return info.ProductName, nil
 }
