@@ -1,10 +1,10 @@
 package clients
 
 import (
-	"Fridger/internal/models"
+	"Fridger/internal/domain/models"
 	"context"
 )
 
 type CrptClient interface {
-	GetByDatamatrix(ctx *context.Context, datamatrix string) (*models.ProductInfo, error)
+	GetByDatamatrix(ctx context.Context, datamatrix string) (*models.ProductInfo, error)
 }

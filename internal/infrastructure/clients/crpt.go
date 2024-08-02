@@ -2,7 +2,7 @@ package clients
 
 import (
 	"Fridger/internal/domain/interfaces/clients"
-	"Fridger/internal/models"
+	"Fridger/internal/domain/models"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -20,9 +20,9 @@ func NewCrptClient() clients.CrptClient {
 	}
 }
 
-func (c *crptClient) GetByDatamatrix(ctx *context.Context, datamatrix string) (*models.ProductInfo, error) {
+func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*models.ProductInfo, error) {
 	link := fmt.Sprintf("https://mobile.api.crpt.ru/mobile/check?code=%s&codeType=datamatrix", url.QueryEscape(datamatrix))
-	req, err := http.NewRequestWithContext(*ctx, "GET", link, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", link, nil)
 	if err != nil {
 		return nil, err
 	}
