@@ -1,9 +1,10 @@
 package main
 
 import (
-	bot2 "Fridger/internal/bot"
 	"Fridger/internal/configuration"
+	"Fridger/internal/handlers"
 	"Fridger/internal/infrastructure/clients"
+	"Fridger/internal/services"
 	"context"
 	configuration_yaml_file "github.com/BoRuDar/configuration-yaml-file"
 	configlib "github.com/BoRuDar/configuration/v4"
@@ -33,6 +34,10 @@ func main() {
 	}
 
 	crptClient := clients.NewCrptClient()
-	botWrapper := bot2.NewBotWrapper(b, crptClient)
-	botWrapper.Start(ctx)
+	photoHandler := handlers.NewPhotoHandler(crptClient)
+
+	botService := services.NewBotService(
+		b,
+		photoHandler)
+	botService.Start(ctx)
 }
