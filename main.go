@@ -8,7 +8,6 @@ import (
 	"context"
 	configuration_yaml_file "github.com/BoRuDar/configuration-yaml-file"
 	configlib "github.com/BoRuDar/configuration/v4"
-	"github.com/go-telegram/bot"
 	_ "image/jpeg"
 	"os"
 	"os/signal"
@@ -28,16 +27,15 @@ func main() {
 		panic(err)
 	}
 
-	b, err := bot.New(cfg.BotToken)
+	crptClient := clients.NewCrptClient()
+	photoHandler := handlers.NewPhotoHandler(crptClient)
+
+	bot, err := services.NewBot(
+		cfg,
+		photoHandler)
 	if err != nil {
 		panic(err)
 	}
 
-	crptClient := clients.NewCrptClient()
-	photoHandler := handlers.NewPhotoHandler(crptClient)
-
-	botService := services.NewBotService(
-		b,
-		photoHandler)
-	botService.Start(ctx)
+	bot.Start(ctx)
 }
