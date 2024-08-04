@@ -3,6 +3,7 @@ package clients
 import (
 	"Fridger/internal/domain/interfaces/clients"
 	"Fridger/internal/domain/models"
+	"Fridger/internal/errors"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -38,6 +39,10 @@ func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*m
 	err = json.NewDecoder(resp.Body).Decode(&info)
 	if err != nil {
 		return nil, err
+	}
+
+	if info.CodeFounded == false {
+		return nil, errors.ErrProductNotFound
 	}
 
 	return &info, nil
