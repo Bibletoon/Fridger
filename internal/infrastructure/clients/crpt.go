@@ -2,14 +2,17 @@ package clients
 
 import (
 	"Fridger/internal/domain/interfaces/clients"
-	"Fridger/internal/errors"
+	"Fridger/internal/domain/models"
 	"Fridger/internal/infrastructure/clients/dto"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/perimeterx/marshmallow"
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
+	"time"
 )
 
 type crptClient struct {
@@ -22,7 +25,7 @@ func NewCrptClient() clients.CrptClient {
 	}
 }
 
-func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*dto.ProductInfoDto, error) {
+func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*models.Product, error) {
 	link := fmt.Sprintf("https://mobile.api.crpt.ru/mobile/check?code=%s&codeType=datamatrix", url.QueryEscape(datamatrix))
 	req, err := http.NewRequestWithContext(ctx, "GET", link, nil)
 	if err != nil {
@@ -41,30 +44,44 @@ func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*d
 		return nil, err
 	}
 
-	var info = dto.ProductInfoDto{}
-	fields, err := marshmallow.Unmarshal(responseBytes, &info)
+	var productInfo = dto.ProductInfoDto{}
+	fields, err := marshmallow.Unmarshal(responseBytes, &productInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	if info.CodeFounded == false {
-		return nil, errors.ErrProductNotFound
+	if productInfo.CodeFounded == false {
+		return nil, fmt.Errorf("code %s not found", datamatrix)
 	}
 
-	productData, ok := fields[info.Category+"Data"].(map[string]interface{})
+	productData, ok := fields[productInfo.Category+"Data"].(map[string]interface{})
 
 	if !ok {
-		return nil, errors.ErrResponseRead
+		return nil, fmt.Errorf("field for category %s not found", productInfo.Category)
 	}
 
 	expiration, ok := productData["expireDate"].(float64)
 	if !ok {
-		return nil, errors.ErrResponseRead
+		return nil, errors.New("expireDate field not found")
 	}
 
-	info.ExpirationDate = expiration
+	gtin, err := strconv.ParseInt(productInfo.CodeResolveData.Gtin, 10, 64)
 
-	return &info, nil
+	if err != nil {
+		return nil, fmt.Errorf("invalid gtin format %s", productInfo.CodeResolveData.Gtin)
+	}
+
+	product := models.Product{
+		Name:           productInfo.ProductName,
+		Gtin:           gtin,
+		Cis:            productInfo.CodeResolveData.Cis,
+		Category:       productInfo.Category,
+		ExpirationDate: time.UnixMilli(int64(expiration)),
+		IsActive:       true,
+		CreatedAt:      time.Now(),
+	}
+
+	return &product, nil
 }
 
 func addHeaders(req *http.Request) {
