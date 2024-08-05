@@ -2,11 +2,12 @@ package clients
 
 import (
 	"Fridger/internal/domain/interfaces/clients"
-	"Fridger/internal/domain/models"
 	"Fridger/internal/errors"
+	"Fridger/internal/infrastructure/clients/dto"
 	"context"
-	"encoding/json"
 	"fmt"
+	"github.com/perimeterx/marshmallow"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -21,7 +22,7 @@ func NewCrptClient() clients.CrptClient {
 	}
 }
 
-func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*models.ProductInfo, error) {
+func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*dto.ProductInfoDto, error) {
 	link := fmt.Sprintf("https://mobile.api.crpt.ru/mobile/check?code=%s&codeType=datamatrix", url.QueryEscape(datamatrix))
 	req, err := http.NewRequestWithContext(ctx, "GET", link, nil)
 	if err != nil {
@@ -35,8 +36,13 @@ func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*m
 	}
 	defer resp.Body.Close()
 
-	var info = models.ProductInfo{}
-	err = json.NewDecoder(resp.Body).Decode(&info)
+	responseBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var info = dto.ProductInfoDto{}
+	fields, err := marshmallow.Unmarshal(responseBytes, &info)
 	if err != nil {
 		return nil, err
 	}
@@ -44,6 +50,19 @@ func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*m
 	if info.CodeFounded == false {
 		return nil, errors.ErrProductNotFound
 	}
+
+	productData, ok := fields[info.Category+"Data"].(map[string]interface{})
+
+	if !ok {
+		return nil, errors.ErrResponseRead
+	}
+
+	expiration, ok := productData["expireDate"].(float64)
+	if !ok {
+		return nil, errors.ErrResponseRead
+	}
+
+	info.ExpirationDate = expiration
 
 	return &info, nil
 }

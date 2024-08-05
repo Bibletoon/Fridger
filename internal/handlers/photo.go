@@ -11,6 +11,7 @@ import (
 	"github.com/makiuchi-d/gozxing/datamatrix"
 	"image"
 	"net/http"
+	"time"
 )
 
 type PhotoHandler struct {
@@ -66,9 +67,11 @@ func (h *PhotoHandler) Handle(ctx context.Context, b *bot.Bot, upd *models.Updat
 		return
 	}
 
+	text := fmt.Sprintf("%s %v", info.ProductName, time.UnixMilli(int64(info.ExpirationDate)))
+
 	msg := bot.SendMessageParams{
 		ChatID: upd.Message.Chat.ID,
-		Text:   info.ProductName,
+		Text:   text,
 	}
 	_, err = b.SendMessage(ctx, &msg)
 	if err != nil {
