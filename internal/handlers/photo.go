@@ -1,26 +1,24 @@
 package handlers
 
 import (
-	"Fridger/internal/domain/interfaces/clients"
+	"Fridger/internal/domain/interfaces/services"
 	"context"
 	"fmt"
-	"github.com/disintegration/imaging"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"github.com/makiuchi-d/gozxing"
-	"github.com/makiuchi-d/gozxing/datamatrix"
 	"image"
 	"net/http"
-	"time"
 )
 
 type PhotoHandler struct {
-	crptClient clients.CrptClient
+	photoService   services.PhotoService
+	productService services.ProductService
 }
 
-func NewPhotoHandler(crptClient clients.CrptClient) *PhotoHandler {
+func NewPhotoHandler(photoService services.PhotoService, productService services.ProductService) *PhotoHandler {
 	return &PhotoHandler{
-		crptClient: crptClient,
+		photoService:   photoService,
+		productService: productService,
 	}
 }
 
@@ -49,25 +47,20 @@ func (h *PhotoHandler) Handle(ctx context.Context, b *bot.Bot, upd *models.Updat
 	defer f.Body.Close()
 
 	img, _, _ := image.Decode(f.Body)
-	code, err := h.decodeImage(img)
-	if err != nil {
-		img = imaging.AdjustContrast(img, 50)
-		code, err = h.decodeImage(img)
-	}
-
-	if err != nil {
-		fmt.Printf("Decode error\n")
-		fmt.Printf("%v\n", err.Error())
-		return
-	}
-
-	info, err := h.crptClient.GetByDatamatrix(ctx, code)
+	code, err := h.photoService.DecodeDatamatrix(img)
 	if err != nil {
 		fmt.Printf("%v\n", err.Error())
 		return
 	}
 
-	text := fmt.Sprintf("%s %v", info.ProductName, time.UnixMilli(int64(info.ExpirationDate)))
+	product, err := h.productService.AddProductByDatamatix(ctx, code)
+
+	if err != nil {
+		fmt.Printf("%v\n", err.Error())
+		return
+	}
+
+	text := fmt.Sprintf("Product %s successfully added", product.Name)
 
 	msg := bot.SendMessageParams{
 		ChatID: upd.Message.Chat.ID,
@@ -78,16 +71,4 @@ func (h *PhotoHandler) Handle(ctx context.Context, b *bot.Bot, upd *models.Updat
 		fmt.Printf("%v\n", err.Error())
 		return
 	}
-}
-
-func (h *PhotoHandler) decodeImage(img image.Image) (string, error) {
-	bmp, _ := gozxing.NewBinaryBitmapFromImage(img)
-	reader := datamatrix.NewDataMatrixReader()
-	result, err := reader.Decode(bmp, nil)
-
-	if err != nil {
-		return "", err
-	}
-
-	return result.GetText(), nil
 }

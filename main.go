@@ -5,11 +5,13 @@ import (
 	"Fridger/internal/handlers"
 	"Fridger/internal/infrastructure/clients"
 	"Fridger/internal/infrastructure/db"
+	"Fridger/internal/infrastructure/repositories"
 	"Fridger/internal/services"
 	"context"
 	configuration_yaml_file "github.com/BoRuDar/configuration-yaml-file"
 	configlib "github.com/BoRuDar/configuration/v4"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/makiuchi-d/gozxing/datamatrix"
 	_ "image/jpeg"
 	"os"
 	"os/signal"
@@ -50,7 +52,13 @@ func main() {
 	}
 
 	crptClient := clients.NewCrptClient()
-	photoHandler := handlers.NewPhotoHandler(crptClient)
+	productRepo := repositories.NewProductRepo(pool)
+	productService := services.NewProductService(productRepo, crptClient)
+
+	dmReader := datamatrix.NewDataMatrixReader()
+	photoService := services.NewPhotoService(dmReader)
+
+	photoHandler := handlers.NewPhotoHandler(photoService, productService)
 
 	bot, err := services.NewBot(
 		cfg,
