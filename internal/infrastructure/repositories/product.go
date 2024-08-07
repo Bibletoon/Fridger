@@ -66,7 +66,8 @@ func (r *productRepo) FindByCis(ctx context.Context, cis string) (*models.Produc
 
 func (r *productRepo) DeleteByCis(ctx context.Context, cis string) error {
 	sql, params, err := helpers.QueryBuilder().
-		Delete("product").
+		Update("product").
+		Set("is_active", false).
 		Where(squirrel.Eq{"cis": cis}).
 		ToSql()
 
