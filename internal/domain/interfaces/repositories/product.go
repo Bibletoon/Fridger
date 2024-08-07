@@ -6,5 +6,7 @@ import (
 )
 
 type ProductRepo interface {
-	Save(ctx context.Context, product *models.Product) error
+	Add(ctx context.Context, product *models.Product) error
+	FindByCis(ctx context.Context, cis string) (*models.Product, error)
+	DeleteByCis(ctx context.Context, cis string) error
 }

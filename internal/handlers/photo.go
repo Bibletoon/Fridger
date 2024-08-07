@@ -27,33 +27,29 @@ func (h *PhotoHandler) Match(upd *models.Update) bool {
 }
 
 func (h *PhotoHandler) Handle(ctx context.Context, b *bot.Bot, upd *models.Update) {
-	photosCount := len(upd.Message.Photo)
-	params := bot.GetFileParams{
-		FileID: upd.Message.Photo[photosCount-1].FileID,
-	}
-
-	file, err := b.GetFile(ctx, &params)
+	img, err := extractImage(ctx, b, upd)
 	if err != nil {
 		fmt.Printf("%v\n", err.Error())
 		return
 	}
-
-	link := b.FileDownloadLink(file)
-	f, err := http.Get(link)
-	if err != nil {
-		fmt.Printf("%v\n", err.Error())
-		return
-	}
-	defer f.Body.Close()
-
-	img, _, _ := image.Decode(f.Body)
 	code, err := h.photoService.DecodeDatamatrix(img)
 	if err != nil {
 		fmt.Printf("%v\n", err.Error())
 		return
 	}
 
-	product, err := h.productService.AddProductByDatamatix(ctx, code)
+	product, err := h.productService.FindProductByDatamatrix(ctx, code)
+
+	if err != nil {
+		fmt.Printf("%v\n", err.Error())
+		return
+	}
+
+	if product == nil {
+		product, err = h.productService.AddProductByDatamatix(ctx, code)
+	} else {
+		err = h.productService.DeleteProductByDatamatrix(ctx, code)
+	}
 
 	if err != nil {
 		fmt.Printf("%v\n", err.Error())
@@ -71,4 +67,30 @@ func (h *PhotoHandler) Handle(ctx context.Context, b *bot.Bot, upd *models.Updat
 		fmt.Printf("%v\n", err.Error())
 		return
 	}
+}
+
+func extractImage(ctx context.Context, b *bot.Bot, upd *models.Update) (image.Image, error) {
+	photosCount := len(upd.Message.Photo)
+	params := bot.GetFileParams{
+		FileID: upd.Message.Photo[photosCount-1].FileID,
+	}
+
+	file, err := b.GetFile(ctx, &params)
+	if err != nil {
+		return nil, err
+	}
+
+	link := b.FileDownloadLink(file)
+	f, err := http.Get(link)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Body.Close()
+
+	img, _, err := image.Decode(f.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return img, nil
 }

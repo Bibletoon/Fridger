@@ -5,6 +5,7 @@ import (
 	"Fridger/internal/domain/interfaces/repositories"
 	"Fridger/internal/domain/interfaces/services"
 	"Fridger/internal/domain/models"
+	"Fridger/internal/helpers"
 	"context"
 )
 
@@ -23,10 +24,30 @@ func (s *productService) AddProductByDatamatix(ctx context.Context, datamatrix s
 		return nil, err
 	}
 
-	err = s.productRepo.Save(ctx, product)
+	err = s.productRepo.Add(ctx, product)
 	if err != nil {
 		return nil, err
 	}
 
 	return product, nil
+}
+
+func (s *productService) FindProductByDatamatrix(ctx context.Context, datamatrix string) (*models.Product, error) {
+	cis := helpers.ParseCis(datamatrix)
+	product, err := s.productRepo.FindByCis(ctx, cis)
+	if err != nil {
+		return nil, err
+	}
+
+	return product, nil
+}
+
+func (s *productService) DeleteProductByDatamatrix(ctx context.Context, datamatrix string) error {
+	cis := helpers.ParseCis(datamatrix)
+	err := s.productRepo.DeleteByCis(ctx, cis)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
