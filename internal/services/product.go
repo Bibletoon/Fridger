@@ -32,9 +32,9 @@ func (s *productService) AddProductByDatamatix(ctx context.Context, datamatrix s
 	return product, nil
 }
 
-func (s *productService) FindProductByDatamatrix(ctx context.Context, datamatrix string) (*models.Product, error) {
+func (s *productService) GetProductByDatamatrix(ctx context.Context, datamatrix string) (*models.Product, error) {
 	cis := helpers.ParseCis(datamatrix)
-	product, err := s.productRepo.FindByCis(ctx, cis)
+	product, err := s.productRepo.GetByCis(ctx, cis)
 	if err != nil {
 		return nil, err
 	}

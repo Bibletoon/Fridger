@@ -1,6 +1,6 @@
 package dto
 
-type ProductInfoDto struct {
+type ProductInfo struct {
 	Id              int64           `json:"id"`
 	CodeFounded     bool            `json:"codeFounded"`
 	CheckResult     bool            `json:"checkResult"`

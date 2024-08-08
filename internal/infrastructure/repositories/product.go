@@ -3,6 +3,7 @@ package repositories
 import (
 	"Fridger/internal/domain/interfaces/repositories"
 	"Fridger/internal/domain/models"
+	errors2 "Fridger/internal/errors"
 	"Fridger/internal/helpers"
 	"context"
 	"errors"
@@ -25,7 +26,14 @@ func (r *productRepo) Add(ctx context.Context, product *models.Product) error {
 		helpers.QueryBuilder().
 			Insert("product").
 			Columns("name", "gtin", "cis", "category", "expiration_date", "is_active", "created_at").
-			Values(product.Name, product.Gtin, product.Cis, product.Category, product.ExpirationDate, product.IsActive, product.CreatedAt).
+			Values(
+				product.Name,
+				product.Gtin,
+				product.Cis,
+				product.Category,
+				product.ExpirationDate,
+				product.IsActive,
+				product.CreatedAt).
 			ToSql()
 
 	if err != nil {
@@ -40,7 +48,7 @@ func (r *productRepo) Add(ctx context.Context, product *models.Product) error {
 	return nil
 }
 
-func (r *productRepo) FindByCis(ctx context.Context, cis string) (*models.Product, error) {
+func (r *productRepo) GetByCis(ctx context.Context, cis string) (*models.Product, error) {
 	sql, params, err := helpers.QueryBuilder().
 		Select("name", "gtin", "cis", "category", "expiration_date", "is_active", "created_at").
 		From("product").
@@ -55,7 +63,7 @@ func (r *productRepo) FindByCis(ctx context.Context, cis string) (*models.Produc
 	err = pgxscan.Get(ctx, r.pool, product, sql, params...)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, errors2.ErrNotFound
 		}
 
 		return nil, err

@@ -6,7 +6,7 @@ import (
 )
 
 type ProductService interface {
-	FindProductByDatamatrix(ctx context.Context, datamatrix string) (*models.Product, error)
+	GetProductByDatamatrix(ctx context.Context, datamatrix string) (*models.Product, error)
 	AddProductByDatamatix(ctx context.Context, datamatrix string) (*models.Product, error)
 	DeleteProductByDatamatrix(ctx context.Context, datamatrix string) error
 }

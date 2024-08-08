@@ -7,6 +7,6 @@ import (
 
 type ProductRepo interface {
 	Add(ctx context.Context, product *models.Product) error
-	FindByCis(ctx context.Context, cis string) (*models.Product, error)
+	GetByCis(ctx context.Context, cis string) (*models.Product, error)
 	DeleteByCis(ctx context.Context, cis string) error
 }

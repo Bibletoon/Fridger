@@ -86,14 +86,14 @@ func extractImage(ctx context.Context, b *bot.Bot, upd *models.Update) (image.Im
 }
 
 func (h *PhotoHandler) processCode(ctx context.Context, code string) (*models2.Product, error) {
-	product, err := h.productService.FindProductByDatamatrix(ctx, code)
+	product, err := h.productService.GetProductByDatamatrix(ctx, code)
+
+	if errors2.Is(err, errors.ErrNotFound) {
+		return h.productService.AddProductByDatamatix(ctx, code)
+	}
 
 	if err != nil {
 		return nil, err
-	}
-
-	if product == nil {
-		return h.productService.AddProductByDatamatix(ctx, code)
 	}
 
 	if product.IsActive {

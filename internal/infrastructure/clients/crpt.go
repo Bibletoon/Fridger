@@ -45,7 +45,7 @@ func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*m
 		return nil, err
 	}
 
-	var productInfo = dto.ProductInfoDto{}
+	var productInfo = dto.ProductInfo{}
 	fields, err := marshmallow.Unmarshal(responseBytes, &productInfo)
 	if err != nil {
 		return nil, err
