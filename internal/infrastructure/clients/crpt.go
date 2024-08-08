@@ -3,6 +3,7 @@ package clients
 import (
 	"Fridger/internal/domain/interfaces/clients"
 	"Fridger/internal/domain/models"
+	errors2 "Fridger/internal/errors"
 	"Fridger/internal/infrastructure/clients/dto"
 	"context"
 	"errors"
@@ -51,7 +52,7 @@ func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*m
 	}
 
 	if productInfo.CodeFounded == false {
-		return nil, fmt.Errorf("code %s not found", datamatrix)
+		return nil, errors2.ErrProductNotFoundInCrpt
 	}
 
 	productData, ok := fields[productInfo.Category+"Data"].(map[string]interface{})

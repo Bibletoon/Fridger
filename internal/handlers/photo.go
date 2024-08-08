@@ -10,6 +10,7 @@ import (
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 	"image"
+	"log"
 	"net/http"
 )
 
@@ -37,7 +38,7 @@ func (h *PhotoHandler) Handle(ctx context.Context, b *bot.Bot, upd *models.Updat
 	}
 	_, err := b.SendMessage(ctx, &msg)
 	if err != nil {
-		fmt.Printf("Error sending message %v\n", err.Error())
+		log.Printf("failed to send message: %e\n", err)
 		return
 	}
 }
@@ -53,6 +54,7 @@ func (h *PhotoHandler) handleInternal(ctx context.Context, b *bot.Bot, upd *mode
 	}
 
 	product, err := h.processCode(ctx, code)
+
 	message := getMessage(product, err)
 	return message
 }
@@ -105,16 +107,27 @@ func (h *PhotoHandler) processCode(ctx context.Context, code string) (*models2.P
 
 func getMessage(product *models2.Product, err error) string {
 	if errors2.Is(err, errors.ErrProductExists) {
-		return fmt.Sprintf("Product %s already exists", product.Name)
+		return fmt.Sprintf("Продукт %s уже существует в базе", product.Name)
+	}
+
+	if errors2.Is(err, errors.ErrProductNotFoundInCrpt) {
+		log.Printf("Product not found in crpt: %e", err)
+		return fmt.Sprintf("Не удалось найти продукт в CRPT")
+	}
+
+	if errors2.Is(err, errors.ErrCodeRead) {
+		log.Printf("Decode error: %e", err)
+		return fmt.Sprintf("Не удалось считать код")
 	}
 
 	if err != nil {
-		return fmt.Sprintf("Error processing product: %s", err.Error())
+		log.Printf("Error processing product: %e", err)
+		return fmt.Sprintf("Произошла внутренняя ошибка")
 	}
 
 	if product.IsActive {
-		return fmt.Sprintf("Product %s successfully added", product.Name)
+		return fmt.Sprintf("Продукт %s успешно добавлен", product.Name)
 	}
 
-	return fmt.Sprintf("Product %s successfully deleted", product.Name)
+	return fmt.Sprintf("Продукт %s успешно удалён", product.Name)
 }
