@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS product (
     id bigserial primary key,
     name text not null,
     gtin bigint not null,
-    cis text null,
+    serial text null,
     category text,
     expiration_date timestamptz,
     is_active boolean default true,

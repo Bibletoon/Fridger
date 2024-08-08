@@ -25,11 +25,11 @@ func (r *productRepo) Add(ctx context.Context, product *models.Product) error {
 	sql, params, err :=
 		helpers.QueryBuilder().
 			Insert("product").
-			Columns("name", "gtin", "cis", "category", "expiration_date", "is_active", "created_at").
+			Columns("name", "gtin", "serial", "category", "expiration_date", "is_active", "created_at").
 			Values(
 				product.Name,
 				product.Gtin,
-				product.Cis,
+				product.Serial,
 				product.Category,
 				product.ExpirationDate,
 				product.IsActive,
@@ -48,11 +48,11 @@ func (r *productRepo) Add(ctx context.Context, product *models.Product) error {
 	return nil
 }
 
-func (r *productRepo) GetByCis(ctx context.Context, cis string) (*models.Product, error) {
+func (r *productRepo) GetBySerial(ctx context.Context, serial string) (*models.Product, error) {
 	sql, params, err := helpers.QueryBuilder().
-		Select("name", "gtin", "cis", "category", "expiration_date", "is_active", "created_at").
+		Select("name", "gtin", "serial", "category", "expiration_date", "is_active", "created_at").
 		From("product").
-		Where(squirrel.Eq{"cis": cis}).
+		Where(squirrel.Eq{"serial": serial}).
 		ToSql()
 
 	if err != nil {
@@ -72,11 +72,11 @@ func (r *productRepo) GetByCis(ctx context.Context, cis string) (*models.Product
 	return product, nil
 }
 
-func (r *productRepo) DeleteByCis(ctx context.Context, cis string) error {
+func (r *productRepo) DeleteBySerial(ctx context.Context, serial string) error {
 	sql, params, err := helpers.QueryBuilder().
 		Update("product").
 		Set("is_active", false).
-		Where(squirrel.Eq{"cis": cis}).
+		Where(squirrel.Eq{"serial": serial}).
 		ToSql()
 
 	if err != nil {

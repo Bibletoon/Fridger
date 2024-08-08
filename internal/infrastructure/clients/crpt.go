@@ -75,7 +75,7 @@ func (c *crptClient) GetByDatamatrix(ctx context.Context, datamatrix string) (*m
 	product := models.Product{
 		Name:           productInfo.ProductName,
 		Gtin:           gtin,
-		Cis:            productInfo.CodeResolveData.Cis,
+		Serial:         productInfo.CodeResolveData.Serial,
 		Category:       productInfo.Category,
 		ExpirationDate: time.UnixMilli(int64(expiration)),
 		IsActive:       true,

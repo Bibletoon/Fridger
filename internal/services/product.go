@@ -34,7 +34,7 @@ func (s *productService) AddProductByDatamatix(ctx context.Context, datamatrix s
 
 func (s *productService) GetProductByDatamatrix(ctx context.Context, datamatrix string) (*models.Product, error) {
 	cis := helpers.ParseCis(datamatrix)
-	product, err := s.productRepo.GetByCis(ctx, cis)
+	product, err := s.productRepo.GetBySerial(ctx, cis)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (s *productService) GetProductByDatamatrix(ctx context.Context, datamatrix 
 
 func (s *productService) DeleteProductByDatamatrix(ctx context.Context, datamatrix string) error {
 	cis := helpers.ParseCis(datamatrix)
-	err := s.productRepo.DeleteByCis(ctx, cis)
+	err := s.productRepo.DeleteBySerial(ctx, cis)
 	if err != nil {
 		return err
 	}

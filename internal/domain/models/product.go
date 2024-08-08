@@ -5,7 +5,7 @@ import "time"
 type Product struct {
 	Name           string
 	Gtin           int64
-	Cis            string
+	Serial         string
 	Category       string
 	ExpirationDate time.Time
 	IsActive       bool

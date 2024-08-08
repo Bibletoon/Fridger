@@ -10,6 +10,6 @@ type ProductInfo struct {
 }
 
 type CodeResolveData struct {
-	Gtin string `json:"gtin"`
-	Cis  string `json:"cis"`
+	Gtin   string `json:"gtin"`
+	Serial string `json:"cis"`
 }
