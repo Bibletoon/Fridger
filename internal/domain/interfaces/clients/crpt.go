@@ -6,5 +6,5 @@ import (
 )
 
 type CrptClient interface {
-	GetByDatamatrix(ctx context.Context, datamatrix string) (*models.ProductInfo, error)
+	GetByDatamatrix(ctx context.Context, datamatrix string) (*models.Product, error)
 }
