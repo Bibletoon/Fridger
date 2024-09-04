@@ -18,6 +18,16 @@ func NewProductService(productRepo repositories.ProductRepo, crptClient clients.
 	return &productService{productRepo, crptClient}
 }
 
+func (s *productService) GetAllActiveProducts(ctx context.Context) ([]*models.Product, error) {
+	products, err := s.productRepo.GetAllActive(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
 func (s *productService) AddProductByDatamatix(ctx context.Context, datamatrix string) (*models.Product, error) {
 	product, err := s.crptClient.GetByDatamatrix(ctx, datamatrix)
 	if err != nil {

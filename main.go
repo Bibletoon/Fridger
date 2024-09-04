@@ -59,10 +59,12 @@ func main() {
 	photoService := services.NewPhotoService(dmReader)
 
 	photoHandler := handlers.NewPhotoHandler(photoService, productService)
+	productsListHandler := handlers.NewProductsListHandler(productService)
 
 	bot, err := services.NewBot(
 		cfg,
-		photoHandler)
+		photoHandler,
+		productsListHandler)
 	if err != nil {
 		panic(err)
 	}

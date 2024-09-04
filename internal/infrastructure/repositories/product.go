@@ -48,6 +48,27 @@ func (r *productRepo) Add(ctx context.Context, product *models.Product) error {
 	return nil
 }
 
+func (r *productRepo) GetAllActive(ctx context.Context) ([]*models.Product, error) {
+	sql, params, err := helpers.QueryBuilder().
+		Select("name", "gtin", "serial", "category", "expiration_date", "is_active", "created_at").
+		From("product").
+		Where(squirrel.Eq{"is_active": true}).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var products []*models.Product
+	err = pgxscan.Get(ctx, r.pool, &products, sql, params...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
 func (r *productRepo) GetBySerial(ctx context.Context, serial string) (*models.Product, error) {
 	sql, params, err := helpers.QueryBuilder().
 		Select("name", "gtin", "serial", "category", "expiration_date", "is_active", "created_at").
