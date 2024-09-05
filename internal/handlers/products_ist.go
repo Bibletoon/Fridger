@@ -46,6 +46,10 @@ func (h *ProductsListHandler) handleInternal(ctx context.Context) string {
 		return fmt.Sprintf("Возникла ошибка при обработке команды: %e", err)
 	}
 
+	if len(products) == 0 {
+		return "Продукты не найдены"
+	}
+
 	buf := bytes.Buffer{}
 	buf.WriteString("Список продуктов:\n")
 
