@@ -60,7 +60,7 @@ func (r *productRepo) GetAllActive(ctx context.Context) ([]*models.Product, erro
 	}
 
 	var products []*models.Product
-	err = pgxscan.Get(ctx, r.pool, &products, sql, params...)
+	err = pgxscan.Select(ctx, r.pool, &products, sql, params...)
 
 	if err != nil {
 		return nil, err

@@ -42,6 +42,7 @@ func (h *ProductsListHandler) handleInternal(ctx context.Context) string {
 	products, err := h.productService.GetAllActiveProducts(ctx)
 
 	if err != nil {
+		log.Printf("failed to get all active products: %e\n", err)
 		return fmt.Sprintf("Возникла ошибка при обработке команды: %e", err)
 	}
 
