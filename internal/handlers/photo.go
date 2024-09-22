@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"Fridger/internal/domain/interfaces/handlers"
 	"Fridger/internal/domain/interfaces/services"
 	models2 "Fridger/internal/domain/models"
 	"Fridger/internal/errors"
@@ -14,23 +15,23 @@ import (
 	"net/http"
 )
 
-type PhotoHandler struct {
+type photoHandler struct {
 	photoService   services.PhotoService
 	productService services.ProductService
 }
 
-func NewPhotoHandler(photoService services.PhotoService, productService services.ProductService) *PhotoHandler {
-	return &PhotoHandler{
+func NewPhotoHandler(photoService services.PhotoService, productService services.ProductService) handlers.Handler {
+	return &photoHandler{
 		photoService:   photoService,
 		productService: productService,
 	}
 }
 
-func (h *PhotoHandler) Match(upd *models.Update) bool {
+func (h *photoHandler) Match(upd *models.Update) bool {
 	return len(upd.Message.Photo) > 0
 }
 
-func (h *PhotoHandler) Handle(ctx context.Context, b *bot.Bot, upd *models.Update) {
+func (h *photoHandler) Handle(ctx context.Context, b *bot.Bot, upd *models.Update) {
 	message := h.handleInternal(ctx, b, upd)
 	msg := bot.SendMessageParams{
 		ChatID: upd.Message.Chat.ID,
@@ -43,7 +44,7 @@ func (h *PhotoHandler) Handle(ctx context.Context, b *bot.Bot, upd *models.Updat
 	}
 }
 
-func (h *PhotoHandler) handleInternal(ctx context.Context, b *bot.Bot, upd *models.Update) string {
+func (h *photoHandler) handleInternal(ctx context.Context, b *bot.Bot, upd *models.Update) string {
 	img, err := extractImage(ctx, b, upd)
 	if err != nil {
 		return getMessage(nil, err)
@@ -85,7 +86,7 @@ func extractImage(ctx context.Context, b *bot.Bot, upd *models.Update) (image.Im
 	return img, nil
 }
 
-func (h *PhotoHandler) processCode(ctx context.Context, code string) (*models2.Product, error) {
+func (h *photoHandler) processCode(ctx context.Context, code string) (*models2.Product, error) {
 	product, err := h.productService.GetProductByDatamatrix(ctx, code)
 
 	if errors2.Is(err, errors.ErrNotFound) {
