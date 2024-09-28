@@ -6,10 +6,12 @@ import (
 	"Fridger/internal/infrastructure/clients"
 	"Fridger/internal/infrastructure/db"
 	"Fridger/internal/infrastructure/repositories"
+	"Fridger/internal/jobs"
 	"Fridger/internal/services"
 	"context"
 	configuration_yaml_file "github.com/BoRuDar/configuration-yaml-file"
 	configlib "github.com/BoRuDar/configuration/v4"
+	"github.com/go-co-op/gocron/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/makiuchi-d/gozxing/datamatrix"
 	_ "image/jpeg"
@@ -62,12 +64,30 @@ func main() {
 	productsListHandler := handlers.NewProductsListHandler(productService)
 
 	bot, err := services.NewBot(
-		cfg,
+		cfg.BotConfiguration,
 		photoHandler,
 		productsListHandler)
 	if err != nil {
 		panic(err)
 	}
 
+	s, err := gocron.NewScheduler()
+
+	if err != nil {
+		panic(err)
+	}
+
+	expiringProductsJob := jobs.NewExpiringProductsJob(cfg.JobsConfiguration.ExpiringProductsJobConfiguration, bot, productService)
+
+	task := gocron.NewTask(expiringProductsJob.Run)
+	schedule := gocron.CronJob(cfg.JobsConfiguration.ExpiringProductsJobConfiguration.Schedule, false)
+
+	_, err = s.NewJob(schedule, task, gocron.WithName("ExpiringProducts"))
+
+	if err != nil {
+		panic(err)
+	}
+
+	s.Start()
 	bot.Start(ctx)
 }
