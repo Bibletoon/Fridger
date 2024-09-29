@@ -22,7 +22,8 @@ type JobsConfiguration struct {
 }
 
 type ExpiringProductsJobConfiguration struct {
-	Schedule             string `file_yml:"jobs.expiring_products.schedule" default:"0 5,10,14 * * *"`
-	DaysBeforeExpiration int    `file_yml:"jobs.expiring_products.days_before_expiration" default:"3"`
-	NotificationUserId   int64  `file_yml:"jobs.expiring_products.notification_user_id"`
+	Schedule string `file_yml:"jobs.expiring_products.schedule" default:"0 5,10,14 * * *"`
+	// TODO: Move to other config
+	DaysBeforeExpiration int   `file_yml:"jobs.expiring_products.days_before_expiration" default:"3"`
+	NotificationUserId   int64 `file_yml:"jobs.expiring_products.notification_user_id"`
 }

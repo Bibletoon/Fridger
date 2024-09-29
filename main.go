@@ -62,11 +62,13 @@ func main() {
 
 	photoHandler := handlers.NewPhotoHandler(photoService, productService)
 	productsListHandler := handlers.NewProductsListHandler(productService)
+	expiringProductsHandler := handlers.NewExpiringProductsHandler(productService, cfg.JobsConfiguration.ExpiringProductsJobConfiguration)
 
 	bot, err := services.NewBot(
 		cfg.BotConfiguration,
 		photoHandler,
-		productsListHandler)
+		productsListHandler,
+		expiringProductsHandler)
 	if err != nil {
 		panic(err)
 	}
