@@ -55,7 +55,3 @@ func (h *expiringProductsHandler) Handle(ctx context.Context, b *bot.Bot, update
 		slog.Error("Error sending expiring products", "error", err.Error())
 	}
 }
-
-func (h *expiringProductsHandler) handleInternal() {
-
-}
