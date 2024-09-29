@@ -12,13 +12,19 @@ import (
 
 type ExpiringProductsJob struct {
 	cfg     configuration.ExpiringProductsJobConfiguration
+	appCfg  configuration.AppConfiguration
 	bot     *bot.Bot
 	service services.ProductService
 }
 
-func NewExpiringProductsJob(cfg configuration.ExpiringProductsJobConfiguration, bot *bot.Bot, service services.ProductService) *ExpiringProductsJob {
+func NewExpiringProductsJob(
+	cfg configuration.ExpiringProductsJobConfiguration,
+	appCfg configuration.AppConfiguration,
+	bot *bot.Bot,
+	service services.ProductService) *ExpiringProductsJob {
 	return &ExpiringProductsJob{
 		cfg:     cfg,
+		appCfg:  appCfg,
 		bot:     bot,
 		service: service,
 	}
@@ -27,7 +33,7 @@ func NewExpiringProductsJob(cfg configuration.ExpiringProductsJobConfiguration, 
 func (j *ExpiringProductsJob) Run() {
 	ctx := context.Background()
 
-	daysBeforeExpiration := j.cfg.DaysBeforeExpiration
+	daysBeforeExpiration := j.appCfg.DaysBeforeExpiration
 	products, err := j.service.GetExpiringProducts(ctx, daysBeforeExpiration)
 
 	if err != nil {

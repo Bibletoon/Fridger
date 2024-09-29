@@ -14,13 +14,13 @@ import (
 
 type expiringProductsHandler struct {
 	productService services.ProductService
-	config         configuration.ExpiringProductsJobConfiguration
+	cfg            configuration.AppConfiguration
 }
 
-func NewExpiringProductsHandler(productService services.ProductService, config configuration.ExpiringProductsJobConfiguration) handlers.Handler {
+func NewExpiringProductsHandler(productService services.ProductService, cfg configuration.AppConfiguration) handlers.Handler {
 	return &expiringProductsHandler{
 		productService: productService,
-		config:         config,
+		cfg:            cfg,
 	}
 }
 
@@ -29,7 +29,7 @@ func (h *expiringProductsHandler) Match(update *models.Update) bool {
 }
 
 func (h *expiringProductsHandler) Handle(ctx context.Context, b *bot.Bot, update *models.Update) {
-	daysBeforeExpiration := h.config.DaysBeforeExpiration
+	daysBeforeExpiration := h.cfg.DaysBeforeExpiration
 	products, err := h.productService.GetExpiringProducts(ctx, daysBeforeExpiration)
 
 	if err != nil {

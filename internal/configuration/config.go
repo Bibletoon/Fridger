@@ -1,10 +1,15 @@
 package configuration
 
 type Configuration struct {
+	AppConfiguration        AppConfiguration        `file_yml:"app"`
 	BotConfiguration        BotConfiguration        `file_yml:"bot"`
 	ConnectionString        string                  `file_yml:"connection_string" env:"CONNECTION_STRING"`
 	MigrationsConfiguration MigrationsConfiguration `file_yml:"migrations_configuration"`
 	JobsConfiguration       JobsConfiguration       `file_yml:"jobs"`
+}
+
+type AppConfiguration struct {
+	DaysBeforeExpiration int `file_yml:"app.days_before_expiration" default:"3"`
 }
 
 type BotConfiguration struct {
@@ -22,8 +27,6 @@ type JobsConfiguration struct {
 }
 
 type ExpiringProductsJobConfiguration struct {
-	Schedule string `file_yml:"jobs.expiring_products.schedule" default:"0 5,10,14 * * *"`
-	// TODO: Move to other config
-	DaysBeforeExpiration int   `file_yml:"jobs.expiring_products.days_before_expiration" default:"3"`
-	NotificationUserId   int64 `file_yml:"jobs.expiring_products.notification_user_id"`
+	Schedule           string `file_yml:"jobs.expiring_products.schedule" default:"0 5,10,14 * * *"`
+	NotificationUserId int64  `file_yml:"jobs.expiring_products.notification_user_id"`
 }

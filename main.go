@@ -17,6 +17,7 @@ import (
 	_ "image/jpeg"
 	"os"
 	"os/signal"
+	"time"
 )
 
 func main() {
@@ -62,7 +63,7 @@ func main() {
 
 	photoHandler := handlers.NewPhotoHandler(photoService, productService)
 	productsListHandler := handlers.NewProductsListHandler(productService)
-	expiringProductsHandler := handlers.NewExpiringProductsHandler(productService, cfg.JobsConfiguration.ExpiringProductsJobConfiguration)
+	expiringProductsHandler := handlers.NewExpiringProductsHandler(productService, cfg.AppConfiguration)
 
 	bot, err := services.NewBot(
 		cfg.BotConfiguration,
@@ -73,13 +74,17 @@ func main() {
 		panic(err)
 	}
 
-	s, err := gocron.NewScheduler()
+	s, err := gocron.NewScheduler(gocron.WithLocation(time.UTC))
 
 	if err != nil {
 		panic(err)
 	}
 
-	expiringProductsJob := jobs.NewExpiringProductsJob(cfg.JobsConfiguration.ExpiringProductsJobConfiguration, bot, productService)
+	expiringProductsJob := jobs.NewExpiringProductsJob(
+		cfg.JobsConfiguration.ExpiringProductsJobConfiguration,
+		cfg.AppConfiguration,
+		bot,
+		productService)
 
 	task := gocron.NewTask(expiringProductsJob.Run)
 	schedule := gocron.CronJob(cfg.JobsConfiguration.ExpiringProductsJobConfiguration.Schedule, false)
