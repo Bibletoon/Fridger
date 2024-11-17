@@ -41,7 +41,7 @@ func (j *ExpiringProductsJob) Run() {
 		return
 	}
 
-	msgText := helpers.BuildExpiredListMessage(products)
+	msgText := helpers.BuildExpiredProductsListMessage(products)
 
 	if len(msgText) == 0 {
 		return

@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func BuildExpiredListMessage(products *models.ProductsCollection) string {
+func BuildExpiredProductsListMessage(products *models.ProductsCollection) string {
 	if products.Len() == 0 {
 		return ""
 	}

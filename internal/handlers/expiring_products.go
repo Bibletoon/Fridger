@@ -37,7 +37,7 @@ func (h *expiringProductsHandler) Handle(ctx context.Context, b *bot.Bot, update
 		return
 	}
 
-	msgText := helpers.BuildExpiredListMessage(products)
+	msgText := helpers.BuildExpiredProductsListMessage(products)
 
 	if len(msgText) == 0 {
 		msgText = "Продукты с опасным сроком годности не найдены"
