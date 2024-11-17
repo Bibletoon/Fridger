@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"Fridger/internal/domain/interfaces/handlers"
 	"Fridger/internal/domain/interfaces/services"
 	"bytes"
 	"context"
@@ -11,21 +12,21 @@ import (
 	"strings"
 )
 
-type ProductsListHandler struct {
+type productsListHandler struct {
 	productService services.ProductService
 }
 
-func NewProductsListHandler(productService services.ProductService) *ProductsListHandler {
-	return &ProductsListHandler{
+func NewProductsListHandler(productService services.ProductService) handlers.Handler {
+	return &productsListHandler{
 		productService: productService,
 	}
 }
 
-func (h *ProductsListHandler) Match(upd *models.Update) bool {
+func (h *productsListHandler) Match(upd *models.Update) bool {
 	return strings.HasPrefix(upd.Message.Text, "/list")
 }
 
-func (h *ProductsListHandler) Handle(ctx context.Context, b *bot.Bot, upd *models.Update) {
+func (h *productsListHandler) Handle(ctx context.Context, b *bot.Bot, upd *models.Update) {
 	message := h.handleInternal(ctx)
 	msg := bot.SendMessageParams{
 		ChatID: upd.Message.Chat.ID,
@@ -38,7 +39,7 @@ func (h *ProductsListHandler) Handle(ctx context.Context, b *bot.Bot, upd *model
 	}
 }
 
-func (h *ProductsListHandler) handleInternal(ctx context.Context) string {
+func (h *productsListHandler) handleInternal(ctx context.Context) string {
 	products, err := h.productService.GetAllActiveProducts(ctx)
 
 	if err != nil {

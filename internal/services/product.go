@@ -7,6 +7,7 @@ import (
 	"Fridger/internal/domain/models"
 	"Fridger/internal/helpers"
 	"context"
+	"time"
 )
 
 type productService struct {
@@ -26,6 +27,17 @@ func (s *productService) GetAllActiveProducts(ctx context.Context) ([]*models.Pr
 	}
 
 	return products, nil
+}
+
+func (s *productService) GetExpiringProducts(ctx context.Context, daysBeforeExpiration int) (*models.ProductsCollection, error) {
+	t := time.Now()
+	products, err := s.productRepo.GetExpiringBefore(ctx, t.AddDate(0, 0, daysBeforeExpiration))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return models.NewProductsCollection(products), nil
 }
 
 func (s *productService) AddProductByDatamatix(ctx context.Context, datamatrix string) (*models.Product, error) {

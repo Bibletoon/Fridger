@@ -11,6 +11,7 @@ import (
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"time"
 )
 
 type productRepo struct {
@@ -62,6 +63,28 @@ func (r *productRepo) GetAllActive(ctx context.Context) ([]*models.Product, erro
 	var products []*models.Product
 	err = pgxscan.Select(ctx, r.pool, &products, sql, params...)
 
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
+func (r *productRepo) GetExpiringBefore(ctx context.Context, time time.Time) ([]*models.Product, error) {
+	sql, params, err := helpers.QueryBuilder().
+		Select("name", "gtin", "serial", "category", "expiration_date", "is_active", "created_at").
+		From("product").
+		Where(squirrel.And{
+			squirrel.LtOrEq{"expiration_date": time},
+			squirrel.Eq{"is_active": true},
+		}).ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var products []*models.Product
+	err = pgxscan.Select(ctx, r.pool, &products, sql, params...)
 	if err != nil {
 		return nil, err
 	}
